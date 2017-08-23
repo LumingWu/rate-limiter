@@ -15,7 +15,7 @@ public class Main {
                 break;
             }
             System.out.println("Status: " + limiter.requestRate());
-            System.out.println("Slot: " + limiter.getToken());
+            System.out.println("Token: " + limiter.getToken());
             System.out.println("Time: " + limiter.getLastUpdate());
         }
     }
