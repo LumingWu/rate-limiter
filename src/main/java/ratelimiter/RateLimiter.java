@@ -1,6 +1,7 @@
 package main.java.ratelimiter;
 
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 
@@ -14,41 +15,41 @@ public class RateLimiter{
      * lastUpdate: the last time the bucket was updated
      */
     
-    private int max_slot;
-    private int slot;
+    private int max_token;
+    private int token;
     private int refill_time;
     private int refill_amount;
     private Instant last_update;
     
-    public RateLimiter(int maxslot, int refilltime, int refillamount){
-        max_slot = maxslot;
-        slot = max_slot;
+    public RateLimiter(int maxstoken, int refilltime, int refillamount){
+        max_token = maxstoken;
+        token = max_token;
         refill_time = refilltime;
         refill_amount = refillamount;
-        last_update = Instant.now();
+        last_update = Instant.now(Clock.systemUTC());
     }
     
-    public RateLimiter(int maxslot, int refilltime){
-        this(maxslot, refilltime, 1);
+    public RateLimiter(int maxstoken, int refilltime){
+        this(maxstoken, refilltime, 1);
     }
     
-    public synchronized boolean hasRate(){
-        Instant now = Instant.now();
+    public synchronized boolean requestRate(){
+        Instant now = Instant.now(Clock.systemUTC());
         int refill_count = (int) Math.floor(Duration.between(last_update, now).getSeconds() / refill_time);
-        slot = Math.min(max_slot, slot + refill_count);
+        token = Math.min(max_token, token + refill_count * refill_amount);
         last_update = last_update.plusSeconds(refill_count * refill_time);
         if(now.isBefore(last_update)){
             last_update = now;
         }
-        if(slot > 0){
-            slot -= 1;
+        if(token > 0){
+            token -= 1;
             return true;
         }
         return false;
     }
 
-    public int getSlot(){
-        return slot;
+    public int getToken(){
+        return token;
     }
 
     public Instant getLastUpdate(){
