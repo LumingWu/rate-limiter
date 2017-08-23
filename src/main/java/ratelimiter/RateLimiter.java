@@ -1,3 +1,9 @@
+package main.java.ratelimiter;
+
+
+import java.time.Duration;
+import java.time.Instant;
+
 public class RateLimiter{
     
     /**
@@ -19,7 +25,7 @@ public class RateLimiter{
         slot = max_slot;
         refill_time = refilltime;
         refill_amount = refillamount;
-        last_update = new Instant();
+        last_update = Instant.now();
     }
     
     public RateLimiter(int maxslot, int refilltime){
@@ -27,14 +33,27 @@ public class RateLimiter{
     }
     
     public synchronized boolean hasRate(){
-        Instant now = new Instant();
-        int refill_count = Math.floor(Duration.between(last_update, now).getSeconds() / refill_time);
+        Instant now = Instant.now();
+        int refill_count = (int) Math.floor(Duration.between(last_update, now).getSeconds() / refill_time);
         slot = Math.min(max_slot, slot + refill_count);
-        last_update = now;
+        last_update = last_update.plusSeconds(refill_count * refill_time);
+        if(now.isBefore(last_update)){
+            last_update = now;
+        }
         if(slot > 0){
             slot -= 1;
             return true;
         }
         return false;
     }
+
+    public int getSlot(){
+        return slot;
+    }
+
+    public Instant getLastUpdate(){
+        return last_update;
+    }
+
+
 }
