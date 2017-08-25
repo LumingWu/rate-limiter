@@ -28,6 +28,10 @@ public class RateLimiter{
         refill_amount = refillamount;
         last_update = Instant.now(Clock.systemUTC());
     }
+
+    public RateLimiter(int maxtoken){
+        this(maxtoken, 1, 1);
+    }
     
     public RateLimiter(int maxstoken, int refilltime){
         this(maxstoken, refilltime, 1);
@@ -38,9 +42,6 @@ public class RateLimiter{
         int refill_count = (int) Math.floor(Duration.between(last_update, now).getSeconds() / refill_time);
         token = Math.min(max_token, token + refill_count * refill_amount);
         last_update = last_update.plusSeconds(refill_count * refill_time);
-        if(now.isBefore(last_update)){
-            last_update = now;
-        }
         if(token > 0){
             token -= 1;
             return true;
